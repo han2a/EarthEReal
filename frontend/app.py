@@ -135,7 +135,7 @@ with st.sidebar:
         token_ok = bool(health.get("earthdata_token_set")) or bool(user_token.strip())
         st.caption("Earthdata token: " + ("available" if token_ok else "MISSING (analysis needs one)"))
         chat_ok = bool(health.get("chat_enabled", health.get("literature_enabled")))
-        st.caption("AI assistant: " + ("enabled" if chat_ok else "disabled (no ANTHROPIC_API_KEY on server)"))
+        st.caption("AI assistant: " + ("enabled" if chat_ok else "disabled (no GEMINI_API_KEY on server)"))
         st.caption("Archives: " + ", ".join(health.get("providers", [])))
         max_products = int(health.get("max_products", 3))
     else:
@@ -452,7 +452,7 @@ with chat_col:
                 st.markdown(m["content"])
         if prompt:
             if not chat_ok:
-                st.info("The assistant is unavailable: the backend is offline or has no ANTHROPIC_API_KEY.")
+                st.info("The assistant is unavailable: the backend is offline or has no GEMINI_API_KEY.")
             else:
                 history.append({"role": "user", "content": prompt})
                 with st.chat_message("user"):
