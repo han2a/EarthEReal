@@ -238,18 +238,21 @@ def build_queries(context, question=None):
     prod = _clean_title(context["product_titles"][0])
     place = context.get("region_name") or ""
     region = re.sub(r"(\d+)\.\d+", r"\1", str(context.get("region") or "")) # addition
-    fallback = [f"{prod} trend {place} climate variability".replace("  ", " ").strip(),
+    fallback = [f"{prod} trend {place or region} climate variability".replace("  ", " ").strip(),
                 f"{prod} climate trend"]
     fallback += [f"{m} {prod}" for m in modes[:2]]
 
     system = ("You write Google Scholar queries for a climate scientist. "
               "Reply with ONLY a JSON array of 3-4 short queries (strings). "
-              "Use plain scientific terms. Never put coordinates, dataset "
+              "Use plain scientific terms. The region may be given as "
+              "coordinates: name the ocean, sea or countries it covers and use "
+              "those names, because papers use place names. Never put dataset "
               "codes, variable codes or pressure levels in a query. If climate "
               "modes are listed, write one query per mode combining the mode "
               "and the physical variable.")
     user = (f"Products: {[_clean_title(t) for t in context['product_titles']]}\n"
             f"Region name: {place or 'unnamed'}\n"
+            f"Region coordinates: {context.get('region') or context.get('bbox')}\n"
             f"Period: {context['period']}\n"
             f"Any significant finding: {context.get('significant')}\n"
             f"Climate modes to check: {modes or 'none'}\n"
