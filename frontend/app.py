@@ -490,7 +490,6 @@ def render_results(tab, analysis, stale):
             for r in lit.get("references", []) or lit.get("retrieved", [])[:8]:
                 st.markdown(f"- [{r.get('id', '')}] [{r.get('title', '')}]({r.get('url', '')}) "
                             f"{r.get('authors_venue_year', '')}")
-            ## addition, if it doesn't work, just remove it
             if lit.get("search_errors"):
                 st.error("Search errors: " + "; ".join(lit["search_errors"]))
             with st.expander("What was searched"):
