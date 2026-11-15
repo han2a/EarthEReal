@@ -115,6 +115,21 @@ def describe_variables(session, url):
                 out.append(item)
     return out
 
+## addition
+def _mask_fill(ds):
+    """Turn fill values into NaN. MERRA-2 ocean fields hold 1e15 over land,
+    and pydap does not always decode it."""
+    for name in list(ds.data_vars):
+        v = ds[name]
+        if not np.issubdtype(v.dtype, np.floating):
+            continue
+        bad = np.abs(v) >= 1e14
+        for key in ("_FillValue", "missing_value"):
+            fv = v.attrs.get(key, v.encoding.get(key))
+            if fv is not None and np.isfinite(fv):
+                bad = bad | (v == fv)
+        ds[name] = v.where(~bad)
+    return ds
 
 def _subset(ds, desc, box, t0, t1):
     names = list(ds.variables)
@@ -162,6 +177,8 @@ def _subset(ds, desc, box, t0, t1):
         idx[lon_n] = slice(a, b)
         parts.append(sub.isel(idx).load())
     out = xr.concat(parts, dim=lon_n) if len(parts) > 1 else parts[0]
+    ## addition
+    out = _mask_fill(out)
 
     rename = {lat_n: "lat", lon_n: "lon"}
     if time_n:
