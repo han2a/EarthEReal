@@ -250,13 +250,18 @@ def build_queries(context, question=None):
     try:
         text = _gemini(system, user, 300)
         if text:
-            arr = json.loads(re.search(r"\[.*\]", text, re.S).group(0))
-            qs = [q for q in arr if isinstance(q, str) and q.strip()][:4]
-            if qs:
-                return qs
-    except Exception:
-        pass
-    return fallback
+            except requests.RequestException as exc:
+        return {"analysis": None, "references": [],
+                "note": "Papers were retrieved, but the language model did not "
+                        f"answer ({type(exc).__name__}). Showing the papers only; try again."}
+    # ----------------------------------------------------------------------
+
+    if text is None:
+        return {"analysis": None,
+                "note": "ANTHROPIC_API_KEY not set: papers retrieved, "
+                        "analysis skipped."}
+
+    valid = {p["id"] for p in ok}
 
 
 def analyse(context, papers, question=None):
