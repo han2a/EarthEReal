@@ -472,14 +472,6 @@ def render_results(tab, analysis, stale):
     with t_lit:
         st.caption("Literature search is run by the backend; the written analysis is AI-generated from "
                    "retrieved titles and abstracts, not full papers.")
-        q = st.text_input("Question (optional)", key=f"litq_{tab}")
-        if st.button("Find related literature", key=f"litbtn_{tab}"):
-            with st.spinner("Searching papers and writing the analysis..."):
-                try:
-                    ctx = chat_context.literature_context(res, res["request"])
-                    st.session_state.setdefault("literature", {})[tab] = client.literature(ctx, q)
-                except ApiError as exc:
-                    st.error(str(exc))
         lit = st.session_state.get("literature", {}).get(tab)
         if lit:
             if lit.get("analysis"):
