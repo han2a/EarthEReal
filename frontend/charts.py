@@ -77,7 +77,7 @@ def trend_map_figure(p):
                                zmin=-lim, zmax=lim, hoverongaps=False,
                                colorbar=dict(title=dict(text=f"{p.get('units') or ''} / decade"))))
     sig = np.array(tm["significant_fdr"], dtype=bool)
-    _, _, sig_o = _display_lon(tm["lon"], sig.astype(float))
+    _, sig_o = _display_lon(tm["lon"], sig.astype(float))
     yy, xx = np.meshgrid(lat, lon, indexing="ij")
     mask = sig_o > 0.5
     if mask.sum():
