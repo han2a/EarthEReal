@@ -42,5 +42,13 @@ def gemini_model():
     )
 
 
+import os
 def env(name, default=None):
-    return os.environ.get(name, default)
+    v = os.getenv(name)
+    if v:
+        return v
+    try:
+        import streamlit as st
+        return st.secrets.get(name, default)
+    except Exception:
+        return default
