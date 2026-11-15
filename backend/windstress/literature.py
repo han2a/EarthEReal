@@ -314,10 +314,10 @@ def analyse(context, papers, question=None):
     bad = cited - valid
     for n in bad:  # strip citations that do not exist
         text = text.replace(f"[{n}]", "[citation removed]")
-    refs = [p for p in ok if p["id"] in cited & valid]
-    return {"analysis": text, "references": refs,
-        "invalid_citations_removed": sorted(bad),
-        "research_gaps": gaps}
+        refs = [p for p in ok if p["id"] in cited & valid]
+        return {"analysis": text, "references": refs,
+              "invalid_citations_removed": sorted(bad),
+              "research_gaps": gaps}
 
 
 def literature_report(context, question=None, year_from=None):
