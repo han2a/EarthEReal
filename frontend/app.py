@@ -30,59 +30,63 @@ PRESETS = {
 
 st.set_page_config(page_title="EarthEReal | Earth & Climate Explorer", page_icon="🌍",
                    layout="wide", initial_sidebar_state="expanded")
+
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-.stApp { background-color: 
-#07111f; color: 
-#e5edf7; }
-[data-testid="stSidebar"] { background-color: 
-#0c1929; border-right: 1px solid 
-#1b3045; }
+.stApp { background-color: #07111f; color: #e5edf7; }
+[data-testid="stSidebar"] { background-color: #0c1929; border-right: 1px solid #1b3045; }
 [data-testid="stHeader"] { background-color: transparent; }
 .block-container { padding-top: 1.5rem; padding-bottom: 3rem; max-width: 1700px; }
-.brand { font-size: 28px; font-weight: 800; letter-spacing: -1px; color: 
-#e5edf7; }
-.brand span { color: 
-#22d3c5; }
-.subtitle { color: 
-#8ca3bb; font-size: 13px; margin-top: 3px; }
-.section-title { font-size: 19px; font-weight: 700; color: 
-#e5edf7; margin-bottom: 5px; }
-.section-description { color: 
-#8ca3bb; font-size: 12px; margin-bottom: 15px; }
-.metric-card { background: linear-gradient(145deg, 
-#10253a, 
-#0c1c2e); border: 1px solid 
-#1d3a50;
+.brand { font-size: 28px; font-weight: 800; letter-spacing: -1px; color: #e5edf7; }
+.brand span { color: #22d3c5; }
+.subtitle { color: #8ca3bb; font-size: 13px; margin-top: 3px; }
+.section-title { font-size: 19px; font-weight: 700; color: #e5edf7; margin-bottom: 5px; }
+.section-description { color: #8ca3bb; font-size: 12px; margin-bottom: 15px; }
+.metric-card { background: linear-gradient(145deg, #10253a, #0c1c2e); border: 1px solid #1d3a50;
   border-radius: 12px; padding: 16px; min-height: 120px; }
-.metric-label { color: 
-#8ca3bb; font-size: 12px; font-weight: 500; }
-.metric-value { color: 
-#e5edf7; font-size: 24px; font-weight: 700; margin-top: 8px; }
-.metric-caption { color: 
-#22d3c5; font-size: 11px; margin-top: 3px; }
-.status-pill { background-color: 
-#173b40; color: 
-#48e0cf; border: 1px solid 
-#23615f;
+.metric-label { color: #8ca3bb; font-size: 12px; font-weight: 500; }
+.metric-value { color: #e5edf7; font-size: 24px; font-weight: 700; margin-top: 8px; }
+.metric-caption { color: #22d3c5; font-size: 11px; margin-top: 3px; }
+.status-pill { background-color: #173b40; color: #48e0cf; border: 1px solid #23615f;
   padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-.status-pill.bad { background-color: 
-#3f1d24; color: 
-#ff8a9b; border-color: 
-#6b2a35; }
-.tag-nasa { color: 
-#22d3c5; font-size: 11px; font-weight: 600; }
-.tag-ai { color: 
-#f59e0b; font-size: 11px; font-weight: 600; }
-.info-panel { background-color: 
-#0c1c2e; border: 1px solid 
-#1d3a50; border-radius: 12px; padding: 14px; }
-hr { border-color: 
-#1b3045; }
+.status-pill.bad { background-color: #3f1d24; color: #ff8a9b; border-color: #6b2a35; }
+.tag-nasa { color: #22d3c5; font-size: 11px; font-weight: 600; }
+.tag-ai { color: #f59e0b; font-size: 11px; font-weight: 600; }
+.info-panel { background-color: #0c1c2e; border: 1px solid #1d3a50; border-radius: 12px; padding: 14px; }
+hr { border-color: #1b3045; }
 </style>
 """, unsafe_allow_html=True)
+
+
+# ------------------------------------------------------------------ cached calls
+@st.cache_data(ttl=20, show_spinner=False)
+def cached_health(base_url: str, token: str):
+    return BackendClient(base_url, token).health()
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def cached_listing(base_url: str, token: str, short_name: str):
+    return BackendClient(base_url, token).collection_listing(short_name)
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def cached_add(base_url: str, token: str, body: dict):
+    return BackendClient(base_url, token).add_product(body)
+
+
+def section_header(title, description=None):
+    st.markdown(f'<div class="section-title">{escape(title)}</div>', unsafe_allow_html=True)
+    if description:
+        st.markdown(f'<div class="section-description">{escape(description)}</div>',
+                    unsafe_allow_html=True)
+
+
+def metric_card(label, value, caption):
+    st.markdown(f"""<div class="metric-card"><div class="metric-label">{escape(str(label))}</div>
+<div class="metric-value">{escape(str(value))}</div>
+<div class="metric-caption">{escape(str(caption))}</div></div>""", unsafe_allow_html=True)
 
 
 # ------------------------------------------------------------------ sidebar
