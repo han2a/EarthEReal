@@ -121,6 +121,11 @@ def _openalex(query, n, year_from=None):
     mailto = config.env("OPENALEX_MAILTO")
     if mailto:
         params["mailto"] = mailto
+   ## addition
+    api_key = config.env("OPENALEX_API_KEY")
+    if api_key:
+        params["api_key"] = api_key
+   ## end of addition
     r = requests.get("https://api.openalex.org/works", params=params,
                      timeout=config.HTTP_TIMEOUT)
     r.raise_for_status()
@@ -155,6 +160,9 @@ def _abstract(inv):
 def _run_queries(queries, per_query, year_from):
     key = config.env("SERPAPI_KEY")
     seen, papers = set(), []
+    ## addition
+    openalex_full = False
+    ## addition
     for q in queries:
         batch = []
         if key:
@@ -162,11 +170,14 @@ def _run_queries(queries, per_query, year_from):
                 batch = _serpapi_scholar(q, per_query, key, year_from)
             except requests.RequestException as exc:
                 papers.append({"error": f"SerpApi failed for {q!r}: {exc}"})
-        if not batch:                      # no key, error, or empty result
+        if not batch and not openalex_full:                      # no key, error, or empty result (revised)
             try:
                 batch = _openalex(q, per_query, year_from)
             except requests.RequestException as exc:
                 papers.append({"error": f"OpenAlex failed for {q!r}: {exc}"})
+                resp = getattr(exc, "response", None)
+                if resp is not None and resp.status_code == 429:
+                    openalex_full = True                        # end of revision
         for p in batch:
             k = re.sub(r"\W+", "", p["title"].lower())
             if k and k not in seen:
@@ -177,7 +188,8 @@ def _run_queries(queries, per_query, year_from):
 
 def search_papers(queries, per_query=8, year_from=None):
     papers = _run_queries(queries, per_query, year_from)
-    if not [p for p in papers if "error" not in p]:
+    limited = any("429" in p.get("error", "") for p in papers)
+    if not [p for p in papers if "error" not in p] and not limited: # revised
         short = [" ".join(q.split()[:4]) for q in queries]      # loosen
         papers += _run_queries(short, per_query, None)          # drop year filter
     ok = [p for p in papers if "error" not in p]
@@ -225,6 +237,7 @@ def build_queries(context, question=None):
     modes = context.get("climate_modes", [])
     prod = _clean_title(context["product_titles"][0])
     place = context.get("region_name") or ""
+    region = re.sub(r"(\d+)\.\d+", r"\1", str(context.get("region") or "")) # addition
     fallback = [f"{prod} trend {place} climate variability".replace("  ", " ").strip(),
                 f"{prod} climate trend"]
     fallback += [f"{m} {prod}" for m in modes[:2]]
