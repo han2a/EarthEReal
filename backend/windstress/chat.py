@@ -1,8 +1,8 @@
 """
-Context-aware chat for the dashboard. The browser never sees the Anthropic key;
+Context-aware chat for the dashboard. The browser never sees the Gemini key;
 the Streamlit front end posts the conversation plus a compact summary of the
 user's selection and the statistics this backend already computed, and this
-module forwards them to Claude.
+module forwards them to Gemini.
 
 The context is DATA, not instructions. The system prompt tells the model to
 treat it that way and to keep measured values (from the context) clearly apart
