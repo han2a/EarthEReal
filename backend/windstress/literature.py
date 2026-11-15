@@ -245,7 +245,7 @@ def build_queries(context, question=None):
             f"Findings: {json.dumps(context['findings'])}\n"
             f"Researcher question: {question or 'none'}")
     try:
-        text = _claude(system, user, 300)
+        text = _gemini(system, user, 300)
         if text:
             arr = json.loads(re.search(r"\[.*\]", text, re.S).group(0))
             qs = [q for q in arr if isinstance(q, str) and q.strip()][:4]
