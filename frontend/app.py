@@ -119,21 +119,17 @@ with st.sidebar:
                 '<div class="subtitle">Earth & Climate Explorer</div>', unsafe_allow_html=True)
     st.markdown("---")
     st.markdown("### Backend")
-    base_url = st.text_input("Backend URL", value=default_base_url(),
-                             help="Django server. Default comes from EARTHEREAL_API_URL.").strip().rstrip("/")
-    user_token = st.text_input("Earthdata token (optional)", type="password",
-                               help="Leave empty to use EARTHDATA_TOKEN configured on the server. "
-                                    "It is sent only to your backend.")
-    client = BackendClient(base_url, user_token)
+    base_url = default_base_url()
+    client = BackendClient(base_url)
     health, health_error = None, None
     try:
-        health = cached_health(base_url, user_token.strip())
+        health = cached_health(base_url, "")
     except ApiError as exc:
         health_error = str(exc)
     if health:
         st.markdown('<span class="status-pill">● BACKEND ONLINE</span>', unsafe_allow_html=True)
-        token_ok = bool(health.get("earthdata_token_set")) or bool(user_token.strip())
-        st.caption("Earthdata token: " + ("available" if token_ok else "MISSING (analysis needs one)"))
+        token_ok = bool(health.get("earthdata_token_set"))
+        st.caption("Server Earthdata token: " + ("available" if token_ok else "not configured"))
         chat_ok = bool(health.get("chat_enabled", health.get("literature_enabled")))
         st.caption("AI assistant: " + ("enabled" if chat_ok else "disabled (no GEMINI_API_KEY on server)"))
         st.caption("Archives: " + ", ".join(health.get("providers", [])))
@@ -237,7 +233,7 @@ def validate(groups, selections):
     if health is None:
         errors.append("The backend is offline.")
     elif not token_ok:
-        errors.append("No Earthdata token: set EARTHDATA_TOKEN on the server or enter one in the sidebar.")
+        errors.append("No Earthdata token: configure EARTHDATA_TOKEN on the backend server.")
     n_prod = 0
     for g in groups:
         sel = selections.get(g.key)
@@ -269,10 +265,9 @@ def signature(tab, selections):
 def run_flow(tab, groups, selections):
     with st.status("Running analysis...", expanded=True) as status:
         st.write("Resolving datasets and variables through the backend...")
-        tok = user_token.strip()
         prep = workflow.prepare(groups, selections,
-                                lambda s: cached_listing(base_url, tok, s),
-                                lambda b: cached_add(base_url, tok, b))
+                                lambda s: cached_listing(base_url, "", s),
+                                lambda b: cached_add(base_url, "", b))
         for w in prep.warnings:
             st.warning(w)
         if prep.ambiguous:
