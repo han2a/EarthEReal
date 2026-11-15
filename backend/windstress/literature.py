@@ -178,39 +178,42 @@ def search_papers(queries, per_query=8, year_from=None):
 # --------------------------------------------------------------------------
 # LLM calls
 # --------------------------------------------------------------------------
-
+LLM_TIMEOUT = 600 
 
 def _gemini(system, user, max_tokens=2500):
     key = config.env("GEMINI_API_KEY")
     if not key:
         return None
-
-    url = config.GEMINI_URL.format(model=config.gemini_model())
-
-    r = requests.post(
-        url,
-        headers={
-            "x-goog-api-key": key,
-            "content-type": "application/json",
-        },
-        json={
-            "systemInstruction": {
-                "parts": [{"text": system}]
-            },
-            "contents": [
-                {
-                    "role": "user",
-                    "parts": [{"text": user}]
-                }
-            ],
-            "generationConfig": {
-                "maxOutputTokens": max_tokens
-            }
-        },
-        timeout=config.HTTP_TIMEOUT,
-    )
-
-    r.raise_for_status()
+    last = None
+    for _ in range(2):
+        try:
+             r = requests.post(
+                 url,
+                 headers={
+                     "x-goog-api-key": key,
+                     "content-type": "application/json",
+                 },
+                 json={
+                     "systemInstruction": {
+                         "parts": [{"text": system}]
+                     },
+                     "contents": [
+                         {
+                             "role": "user",
+                             "parts": [{"text": user}]
+                         }
+                     ],
+                     "generationConfig": {
+                         "maxOutputTokens": max_tokens
+                     }
+                 },
+                 timeout=config.HTTP_TIMEOUT,
+             )
+           r.raise_for_status()
+            return "".join(b.get("text", "") for b in r.json().get("content", []))
+        except requests.Timeout as exc:
+            last = exc
+    raise last
 
     data = r.json()
 
