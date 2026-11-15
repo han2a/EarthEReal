@@ -35,18 +35,42 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-.stApp { background-color: #07111f; color: #e5edf7; }
+.stApp {
+  --text-color: #e5edf7;
+  --secondary-text-color: #c0ccda;
+  background-color: #07111f;
+  color: #e5edf7;
+}
 [data-testid="stSidebar"] { background-color: #0c1929; border-right: 1px solid #1b3045; }
 [data-testid="stHeader"] { background-color: transparent; }
 .block-container { padding-top: 1.5rem; padding-bottom: 3rem; max-width: 1700px; }
+[data-testid="stMarkdownContainer"] p,
+[data-testid="stMarkdownContainer"] li,
+[data-testid="stWidgetLabel"] p,
+[data-testid="stExpander"] summary,
+[data-testid="stTabs"] button,
+[data-testid="stRadio"] label,
+[data-testid="stCheckbox"] label { color: #e5edf7; }
+[data-testid="stCaptionContainer"],
+.subtitle,
+.section-description,
+.metric-label { color: #c0ccda; }
+[data-testid="stTextInput"] input,
+[data-testid="stNumberInput"] input,
+[data-testid="stDateInput"] input,
+[data-testid="stSelectbox"] [data-baseweb="select"],
+[data-testid="stMultiSelect"] [data-baseweb="select"] { color: #e5edf7; }
+input::placeholder,
+textarea::placeholder { color: #b8c5d6; opacity: 1; }
+a { color: #55e3d5; }
 .brand { font-size: 28px; font-weight: 800; letter-spacing: -1px; color: #e5edf7; }
 .brand span { color: #22d3c5; }
-.subtitle { color: #8ca3bb; font-size: 13px; margin-top: 3px; }
+.subtitle { font-size: 13px; margin-top: 3px; }
 .section-title { font-size: 19px; font-weight: 700; color: #e5edf7; margin-bottom: 5px; }
-.section-description { color: #8ca3bb; font-size: 12px; margin-bottom: 15px; }
+.section-description { font-size: 12px; margin-bottom: 15px; }
 .metric-card { background: linear-gradient(145deg, #10253a, #0c1c2e); border: 1px solid #1d3a50;
   border-radius: 12px; padding: 16px; min-height: 120px; }
-.metric-label { color: #8ca3bb; font-size: 12px; font-weight: 500; }
+.metric-label { font-size: 12px; font-weight: 500; }
 .metric-value { color: #e5edf7; font-size: 24px; font-weight: 700; margin-top: 8px; }
 .metric-caption { color: #22d3c5; font-size: 11px; margin-top: 3px; }
 .status-pill { background-color: #173b40; color: #48e0cf; border: 1px solid #23615f;
