@@ -27,7 +27,7 @@ DEFAULT_BBOX = {
     "lat_min": 0.0,
     "lat_max": 30.0,
     "lon_min": 110.0,
-    "lon_max": 150.0,
+    "lon_max": 135.0,
 }
 
 st.set_page_config(page_title="EarthEReal | Earth & Climate Explorer", page_icon="🌍",
