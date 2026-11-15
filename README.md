@@ -27,9 +27,8 @@ cd frontend
 streamlit run app.py
 ```
 
-The local frontend uses `http://localhost:8000` by default. For local analysis,
-enter an Earthdata token in the frontend sidebar or set `EARTHDATA_TOKEN` for
-the backend.
+The local frontend uses `http://localhost:8000` by default. Set
+`EARTHDATA_TOKEN` for the backend to enable analysis.
 
 ## Deploy the backend to Render
 
@@ -46,5 +45,7 @@ EARTHEREAL_API_URL = "https://your-backend.onrender.com"
 EARTHEREAL_API_KEY = "the-same-generated-key-as-on-render"
 ```
 
-Set `EARTHDATA_TOKEN` in Render's environment settings if the backend should
-use a server-side Earthdata token. Do not commit credentials or secrets.
+Set `EARTHDATA_TOKEN` in Render's environment settings so visitors can run
+analysis without entering an Earthdata token. The frontend reads the backend
+URL and API key from the Streamlit app's secrets; visitors are not prompted
+for either value. Do not commit credentials or secrets.
