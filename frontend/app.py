@@ -9,7 +9,10 @@ from datetime import date, datetime, timezone
 from html import escape
 
 import pandas as pd
+import folium
 import streamlit as st
+from folium.plugins import Draw
+from streamlit_folium import st_folium
 
 import charts
 import chat_context
@@ -20,12 +23,11 @@ from catalog.base import bbox_overlaps, estimate_files
 
 MAX_GRANULES = int(os.environ.get("EARTHEREAL_MAX_GRANULES", "1500"))   # mirror of backend config
 MIN_MONTHS = 8                                                           # backend trend tests need >= 8
-PRESETS = {
-    "Custom": None,
-    "Philippines region": (4.0, 22.0, 116.0, 128.0),
-    "Western Pacific": (-10.0, 40.0, 100.0, 180.0),
-    "Contiguous US": (25.0, 50.0, -125.0, -67.0),
-    "Global": (-90.0, 90.0, -180.0, 180.0),
+DEFAULT_BBOX = {
+    "lat_min": 0.0,
+    "lat_max": 30.0,
+    "lon_min": 110.0,
+    "lon_max": 150.0,
 }
 
 st.set_page_config(page_title="EarthEReal | Earth & Climate Explorer", page_icon="🌍",
@@ -113,6 +115,101 @@ def metric_card(label, value, caption):
 <div class="metric-caption">{escape(str(caption))}</div></div>""", unsafe_allow_html=True)
 
 
+def bbox_from_drawing(drawing):
+    geometry = (drawing or {}).get("geometry") or {}
+    if geometry.get("type") != "Polygon":
+        return None
+    coordinates = geometry.get("coordinates") or []
+    if not coordinates or not coordinates[0]:
+        return None
+    try:
+        points = [(float(point[0]), float(point[1])) for point in coordinates[0]]
+    except (IndexError, TypeError, ValueError):
+        return None
+    longitudes, latitudes = zip(*points)
+    bbox = {
+        "lat_min": min(latitudes),
+        "lat_max": max(latitudes),
+        "lon_min": min(longitudes),
+        "lon_max": max(longitudes),
+    }
+    if not (-90 <= bbox["lat_min"] < bbox["lat_max"] <= 90
+            and -180 <= bbox["lon_min"] < bbox["lon_max"] <= 180):
+        return None
+    return bbox
+
+
+def render_region_picker():
+    if "region_bbox" not in st.session_state:
+        st.session_state["region_bbox"] = DEFAULT_BBOX.copy()
+    st.session_state.setdefault("region_map_center", [15.0, 130.0])
+    st.session_state.setdefault("region_map_zoom", 3)
+    st.session_state.setdefault("region_map_revision", 0)
+
+    if st.button("Reset region", key="reset_region"):
+        st.session_state["region_bbox"] = DEFAULT_BBOX.copy()
+        st.session_state["region_map_center"] = [15.0, 130.0]
+        st.session_state["region_map_zoom"] = 3
+        st.session_state["region_map_revision"] += 1
+        st.rerun()
+
+    bbox = st.session_state["region_bbox"]
+    region_map = folium.Map(
+        location=st.session_state["region_map_center"],
+        zoom_start=st.session_state["region_map_zoom"],
+        min_zoom=1,
+        control_scale=True,
+    )
+    folium.Rectangle(
+        bounds=[[bbox["lat_min"], bbox["lon_min"]],
+                [bbox["lat_max"], bbox["lon_max"]]],
+        color="#0b8f86",
+        weight=2,
+        fill=True,
+        fill_color="#22d3c5",
+        fill_opacity=0.15,
+        tooltip="Selected analysis region",
+    ).add_to(region_map)
+    Draw(
+        position="topleft",
+        draw_options={
+            "polyline": False,
+            "polygon": False,
+            "circle": False,
+            "circlemarker": False,
+            "marker": False,
+            "rectangle": True,
+        },
+        edit_options={"edit": False, "remove": False},
+    ).add_to(region_map)
+    map_state = st_folium(
+        region_map,
+        width=280,
+        height=360,
+        key=f"region_map_{st.session_state['region_map_revision']}",
+        returned_objects=["last_active_drawing", "center", "zoom"],
+    ) or {}
+    selected_bbox = bbox_from_drawing(map_state.get("last_active_drawing"))
+    if selected_bbox:
+        st.session_state["region_bbox"] = selected_bbox
+    center = map_state.get("center")
+    if isinstance(center, dict) and "lat" in center and "lng" in center:
+        st.session_state["region_map_center"] = [center["lat"], center["lng"]]
+    elif isinstance(center, (list, tuple)) and len(center) == 2:
+        st.session_state["region_map_center"] = list(center)
+    zoom = map_state.get("zoom")
+    if zoom is not None:
+        st.session_state["region_map_zoom"] = int(zoom)
+
+    bbox = st.session_state["region_bbox"]
+    st.caption("Draw a rectangle on the map to select your analysis area. Drag to pan; use the controls or scroll to zoom.")
+    st.caption(
+        f"Selected: {bbox['lat_min']:.2f} to {bbox['lat_max']:.2f} latitude, "
+        f"{bbox['lon_min']:.2f} to {bbox['lon_max']:.2f} longitude"
+    )
+    return bbox
+
+
 # ------------------------------------------------------------------ sidebar
 with st.sidebar:
     st.markdown('<div class="brand">EARTH<span>EREAL</span></div>'
@@ -141,14 +238,7 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("### Region")
-    preset = st.selectbox("Preset", list(PRESETS), help="Presets are only bounding boxes; edit freely.")
-    base = PRESETS[preset] or (0.0, 30.0, 110.0, 150.0)
-    c1, c2 = st.columns(2)
-    lat_min = c1.number_input("Lat min", -90.0, 90.0, base[0], 0.5, key=f"latmin_{preset}")
-    lat_max = c2.number_input("Lat max", -90.0, 90.0, base[1], 0.5, key=f"latmax_{preset}")
-    lon_min = c1.number_input("Lon min", -180.0, 360.0, base[2], 0.5, key=f"lonmin_{preset}")
-    lon_max = c2.number_input("Lon max", -180.0, 360.0, base[3], 0.5, key=f"lonmax_{preset}")
-    bbox = {"lat_min": lat_min, "lat_max": lat_max, "lon_min": lon_min, "lon_max": lon_max}
+    bbox = render_region_picker()
 
     st.markdown("### Period")
     start_d = st.date_input("Start month", value=date(2017, 1, 1), min_value=date(1980, 1, 1),
@@ -219,9 +309,10 @@ def validate(groups, selections):
     errors, warnings = [], []
     if not selections:
         errors.append("Select at least one variable.")
-    if not (-90 <= lat_min < lat_max <= 90):
+    if not (-90 <= bbox["lat_min"] < bbox["lat_max"] <= 90):
         errors.append("Latitude: min must be below max, within -90 to 90.")
-    if not (-180 <= lon_min < lon_max <= 360 and lon_max - lon_min <= 360):
+    if not (-180 <= bbox["lon_min"] < bbox["lon_max"] <= 360
+            and bbox["lon_max"] - bbox["lon_min"] <= 360):
         errors.append("Longitude: min must be below max, within -180 to 360, at most 360 apart.")
     if n_months < 1:
         errors.append("The start month is after the end month.")
