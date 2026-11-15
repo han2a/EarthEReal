@@ -30,6 +30,9 @@ streamlit run app.py
 The local frontend uses `http://localhost:8000` by default. Set
 `EARTHDATA_TOKEN` for the backend to enable analysis.
 
+Choose the analysis area in the **Region** sidebar map: zoom and pan to an
+area, then draw a rectangle to set its latitude/longitude bounds.
+
 ## Deploy the backend to Render
 
 The root `render.yaml` defines a Django web service. In Render, choose **New**
