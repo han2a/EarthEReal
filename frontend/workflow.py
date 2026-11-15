@@ -40,7 +40,8 @@ def prepare(groups, selections, listing_fn, add_fn) -> Prepared:
                 f"{g.short_name}: the backend resolved version {info['version']}, expected {g.version}.")
         if not variables:
             prep.warnings.append(
-                f"{g.short_name}: no variable list available (set an Earthdata token to read it from a "
+                f"{g.short_name}: no variable list available (configure an Earthdata token on the backend "
+                "server to read it from a "
                 "sample file). Variables chosen by exact name could not be verified in advance.")
         for ok in opt_keys:
             opt = g.option(ok)
@@ -58,7 +59,8 @@ def prepare(groups, selections, listing_fn, add_fn) -> Prepared:
                         prep.ambiguous[(g.key, c.key)] = cands
                     elif not variables and not c.variable:
                         prep.errors.append(
-                            f"{c.label}: needs the variable list of {g.short_name}, which requires an Earthdata token.")
+                            f"{c.label}: needs the variable list of {g.short_name}, which requires an "
+                            "Earthdata token configured on the backend server.")
                     else:
                         names = ", ".join(v["variable"] for v in variables[:20])
                         wanted = c.variable or "/".join(c.hints)
