@@ -30,97 +30,57 @@ PRESETS = {
 
 st.set_page_config(page_title="EarthEReal | Earth & Climate Explorer", page_icon="🌍",
                    layout="wide", initial_sidebar_state="expanded")
-
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-.stApp { background-color: #07111f; color: #e5edf7; }
-[data-testid="stSidebar"] { background-color: #0c1929; border-right: 1px solid #1b3045; }
+.stApp { background-color: 
+#07111f; color: 
+#e5edf7; }
+[data-testid="stSidebar"] { background-color: 
+#0c1929; border-right: 1px solid 
+#1b3045; }
 [data-testid="stHeader"] { background-color: transparent; }
 .block-container { padding-top: 1.5rem; padding-bottom: 3rem; max-width: 1700px; }
-
-/* ---------- Readable text everywhere ---------- */
-.stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6,
-.stApp p, .stApp li, .stApp span, .stApp label, .stApp div,
-[data-testid="stMarkdownContainer"],
-[data-testid="stMarkdownContainer"] p,
-[data-testid="stMarkdownContainer"] li,
-[data-testid="stWidgetLabel"],
-[data-testid="stWidgetLabel"] p,
-[data-testid="stSidebar"] *,
-[data-testid="stRadio"] label,
-[data-testid="stCheckbox"] label,
-[data-testid="stExpander"] summary,
-[data-testid="stExpander"] summary p {
-  color: #e5edf7;
-}
-
-/* Secondary / muted text */
-[data-testid="stCaptionContainer"],
-[data-testid="stCaptionContainer"] p,
-.stCaption, small { color: #8ca3bb !important; }
-
-/* Metrics (st.metric) */
-[data-testid="stMetricLabel"], [data-testid="stMetricLabel"] p { color: #8ca3bb !important; }
-[data-testid="stMetricValue"] { color: #e5edf7 !important; }
-
-/* Inputs, selects, multiselects */
-input, textarea,
-[data-baseweb="select"] > div,
-[data-baseweb="input"] > div,
-[data-baseweb="textarea"] > div {
-  background-color: #10253a !important;
-  color: #e5edf7 !important;
-  border-color: #1d3a50 !important;
-}
-[data-baseweb="select"] span, [data-baseweb="select"] div { color: #e5edf7 !important; }
-[data-baseweb="select"] svg { fill: #8ca3bb !important; }
-[data-baseweb="popover"] ul, [data-baseweb="menu"] { background-color: #0c1c2e !important; }
-[data-baseweb="popover"] li, [data-baseweb="menu"] li { color: #e5edf7 !important; }
-[data-baseweb="popover"] li:hover { background-color: #173b40 !important; }
-[data-baseweb="tag"] { background-color: #173b40 !important; }
-[data-baseweb="tag"] span { color: #48e0cf !important; }
-input::placeholder, textarea::placeholder { color: #6b829a !important; }
-
-/* Tabs */
-[data-baseweb="tab-list"] button p { color: #8ca3bb !important; }
-[data-baseweb="tab-list"] button[aria-selected="true"] p { color: #22d3c5 !important; }
-
-/* Buttons */
-.stButton > button, .stDownloadButton > button {
-  background-color: #10253a; color: #e5edf7; border: 1px solid #1d3a50;
-}
-.stButton > button:hover { border-color: #22d3c5; color: #22d3c5; }
-
-/* Dataframes / tables */
-[data-testid="stDataFrame"], [data-testid="stTable"] table, [data-testid="stTable"] td, [data-testid="stTable"] th {
-  color: #e5edf7 !important;
-}
-
-/* Slider values */
-[data-testid="stSlider"] [data-testid="stTickBarMin"],
-[data-testid="stSlider"] [data-testid="stTickBarMax"],
-[data-testid="stSlider"] div[data-baseweb="slider"] div { color: #e5edf7 !important; }
-
-/* Your custom classes (unchanged) */
-.brand { font-size: 28px; font-weight: 800; letter-spacing: -1px; color: #e5edf7; }
-.brand span { color: #22d3c5; }
-.subtitle { color: #8ca3bb; font-size: 13px; margin-top: 3px; }
-.section-title { font-size: 19px; font-weight: 700; color: #e5edf7; margin-bottom: 5px; }
-.section-description { color: #8ca3bb; font-size: 12px; margin-bottom: 15px; }
-.metric-card { background: linear-gradient(145deg, #10253a, #0c1c2e); border: 1px solid #1d3a50;
+.brand { font-size: 28px; font-weight: 800; letter-spacing: -1px; color: 
+#e5edf7; }
+.brand span { color: 
+#22d3c5; }
+.subtitle { color: 
+#8ca3bb; font-size: 13px; margin-top: 3px; }
+.section-title { font-size: 19px; font-weight: 700; color: 
+#e5edf7; margin-bottom: 5px; }
+.section-description { color: 
+#8ca3bb; font-size: 12px; margin-bottom: 15px; }
+.metric-card { background: linear-gradient(145deg, 
+#10253a, 
+#0c1c2e); border: 1px solid 
+#1d3a50;
   border-radius: 12px; padding: 16px; min-height: 120px; }
-.metric-label { color: #8ca3bb; font-size: 12px; font-weight: 500; }
-.metric-value { color: #e5edf7; font-size: 24px; font-weight: 700; margin-top: 8px; }
-.metric-caption { color: #22d3c5; font-size: 11px; margin-top: 3px; }
-.status-pill { background-color: #173b40; color: #48e0cf; border: 1px solid #23615f;
+.metric-label { color: 
+#8ca3bb; font-size: 12px; font-weight: 500; }
+.metric-value { color: 
+#e5edf7; font-size: 24px; font-weight: 700; margin-top: 8px; }
+.metric-caption { color: 
+#22d3c5; font-size: 11px; margin-top: 3px; }
+.status-pill { background-color: 
+#173b40; color: 
+#48e0cf; border: 1px solid 
+#23615f;
   padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-.status-pill.bad { background-color: #3f1d24; color: #ff8a9b; border-color: #6b2a35; }
-.tag-nasa { color: #22d3c5; font-size: 11px; font-weight: 600; }
-.tag-ai { color: #f59e0b; font-size: 11px; font-weight: 600; }
-.info-panel { background-color: #0c1c2e; border: 1px solid #1d3a50; border-radius: 12px; padding: 14px; }
-hr { border-color: #1b3045; }
+.status-pill.bad { background-color: 
+#3f1d24; color: 
+#ff8a9b; border-color: 
+#6b2a35; }
+.tag-nasa { color: 
+#22d3c5; font-size: 11px; font-weight: 600; }
+.tag-ai { color: 
+#f59e0b; font-size: 11px; font-weight: 600; }
+.info-panel { background-color: 
+#0c1c2e; border: 1px solid 
+#1d3a50; border-radius: 12px; padding: 14px; }
+hr { border-color: 
+#1b3045; }
 </style>
 """, unsafe_allow_html=True)
 
