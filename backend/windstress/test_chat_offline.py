@@ -28,8 +28,8 @@ try:
 except ValueError:
     pass
 
-# --- reply: no key -> ChatUnavailable; with key -> calls Anthropic ---------------
-os.environ.pop("ANTHROPIC_API_KEY", None)
+# --- reply: no key -> ChatUnavailable; with key -> calls Gemini ----------------
+os.environ.pop("GEMINI_API_KEY", None)
 try:
     chat.reply([{"role": "user", "content": "hi"}], {})
     raise AssertionError
@@ -40,15 +40,16 @@ sent = {}
 class R:
     status_code = 200
     def raise_for_status(self): pass
-    def json(self): return {"content": [{"type": "text", "text": "answer"}]}
+    def json(self):
+        return {"candidates": [{"content": {"parts": [{"text": "answer"}]}}]}
 def fake_post(url, headers=None, json=None, timeout=None):
     sent.update(url=url, headers=headers, body=json)
     return R()
 chat.requests.post = fake_post
-os.environ["ANTHROPIC_API_KEY"] = "test-key"
+os.environ["GEMINI_API_KEY"] = "test-key"
 assert chat.reply([{"role": "user", "content": "hi"}], {"tab": "Atmosphere"}) == "answer"
-assert sent["url"] == "https://api.anthropic.com/v1/messages"
-assert sent["headers"]["anthropic-version"] == "2023-06-01"
-assert '"tab": "Atmosphere"' in sent["body"]["system"]
-assert sent["body"]["messages"] == [{"role": "user", "content": "hi"}]
+assert sent["url"] == chat.GEMINI_URL.format(model=chat.gemini_model())
+assert sent["headers"]["x-goog-api-key"] == "test-key"
+assert '"tab": "Atmosphere"' in sent["body"]["system_instruction"]["parts"][0]["text"]
+assert sent["body"]["contents"] == [{"role": "user", "parts": [{"text": "hi"}]}]
 print("all chat checks passed")
